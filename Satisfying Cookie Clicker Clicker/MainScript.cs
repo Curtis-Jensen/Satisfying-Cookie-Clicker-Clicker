@@ -16,6 +16,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         private WebDriverWait wait;
         private int minutesPast;
         private By bigCookie = By.XPath("//*[@id='bigCookie']");
+        private Building[] buildingList;
 
         #region🖥StartUp Browser
         public void StartWebDriver()
@@ -53,6 +54,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         {
             #region🚦Paths
             var options =         By.XPath("//*[@id='prefsButton']");
+            var numbers =         By.XPath("//*[@id='numbersButton']");
             var altFont =         By.XPath("//*[@id='monospaceButton']");
             var shortNumbers =    By.XPath("//*[@id='formatButton']");
             var fastNotes =       By.XPath("//*[@id='notifsButton']");
@@ -66,9 +68,11 @@ namespace Satisfying_Cookie_Clicker_Clicker
 
             Thread.Sleep(1000);
             webDriver.FindElement(computerCookieConfirm).Click();
-
-            webDriver.FindElement(options).Click();
             Thread.Sleep(100);
+
+            //This could all be a for loop if I make a list in the constructors.  Would definitely need more comments though
+            webDriver.FindElement(options).Click();
+            webDriver.FindElement(numbers).Click();
             webDriver.FindElement(altFont).Click();
             webDriver.FindElement(shortNumbers).Click();
             webDriver.FindElement(fastNotes).Click();
@@ -86,17 +90,28 @@ namespace Satisfying_Cookie_Clicker_Clicker
          * product1 is grandma, etc
          */
         [Test]
-        public void Test1()
+        public void MainLoop()
         {
             StartWebDriver();
             int i = 0;
 
+            buildingList = new Building[]
+            {
+                new Building("Cursor",  By.XPath("//*[@id='product0']"), 15, .1f),
+                new Building("Grandma", By.XPath("//*[@id='product1']"), 100, 1)
+            };
+
+            while (i < 99)
+            {
+                webDriver.FindElement(bigCookie).Click();
+                i++;
+            }
 
             while (true)
             {
-                i++;
                 webDriver.FindElement(bigCookie).Click();
                 ClickOnUpgrades();
+                i++;
             }
         }
 
@@ -114,11 +129,13 @@ namespace Satisfying_Cookie_Clicker_Clicker
             }
             catch(Exception){}
 
-            for (int i = 0; i < 18; i++)
+            foreach(Building building in buildingList)
             {
-                var product = By.XPath($"//*[@id='product{i}']");
-                if (webDriver.FindElement(product).GetAttribute("Class") == "product unlocked enabled")
-                    webDriver.FindElement(product).Click();
+                if (webDriver.FindElement(building._path).GetAttribute("Class") == "product unlocked enabled")
+                {
+                    webDriver.FindElement(building._path).Click();
+                    building.CalculateValue();
+                }
             }
         }
         #endregion
