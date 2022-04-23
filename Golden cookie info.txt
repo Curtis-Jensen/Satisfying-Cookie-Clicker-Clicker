@@ -1,0 +1,2 @@
+OpenQA.Selenium.ElementClickInterceptedException : element click intercepted: Element <div id="bigCookie" alt="Big clickable cookie"></div> is not clickable at point (230, 318). Other element would receive the click: <div class="shimmer" alt="Golden cookie" style="left: 143px; top: 196px; width: 96px; height: 96px; background-image: url(&quot;img/goldCookie.png&quot;); background-position: 0px 0px; opacity: 0.976926; display: block; transform: rotate(-5.23398deg) scale(1.06091);"></div>
+      (Session info: chrome=100.0.4896.127)
