@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Satisfying_Cookie_Clicker_Clicker
 {
-    public class Tests
+    public class MainScript
     {
         private ChromeDriver webDriver;
         private WebDriverWait wait;
