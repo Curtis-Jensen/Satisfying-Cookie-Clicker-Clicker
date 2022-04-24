@@ -17,6 +17,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         private int minutesPast;
         private By bigCookie = By.XPath("//*[@id='bigCookie']");
         private Building[] buildingList;
+        private Building nextBuilding;
 
         #region🖥StartUp Browser
         public void StartWebDriver()
@@ -95,11 +96,31 @@ namespace Satisfying_Cookie_Clicker_Clicker
             StartWebDriver();
             int i = 0;
 
+            #region🏛Building List
             buildingList = new Building[]
             {
-                new Building("Cursor",  By.XPath("//*[@id='product0']"), 15, .1f),
-                new Building("Grandma", By.XPath("//*[@id='product1']"), 100, 1)
+                new Building("Cursor", buildingNumber: 0, price: 15, multiplier: .1f),
+                new Building("Grandma", buildingNumber: 1, price: 100, multiplier: 1),
+                new Building("Farm", buildingNumber: 2, price: 1100, multiplier: 8),
+                new Building("Mine", buildingNumber: 3, price: 12000, multiplier: 47),
+                new Building("Factory", buildingNumber: 4, price: 130000, multiplier: 260),
+                new Building("Bank", buildingNumber: 5, price: 1400000, multiplier: 1400),
+                new Building("Temple", buildingNumber: 6, price: 20000000, multiplier: 7800),
+                new Building("Wizard Tower", buildingNumber: 7, price: 330000000, multiplier: 44000),
+                //new Building("Farm", buildingNumber: 8, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 9, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 10, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 11, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 12, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 13, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 14, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 15, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 16, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 17, price: 1100, multiplier: 8),
+                //new Building("Farm", buildingNumber: 18, price: 1100, multiplier: 8),
             };
+            nextBuilding = buildingList[1];
+            #endregion
 
             while (i < 99)
             {
@@ -129,12 +150,19 @@ namespace Satisfying_Cookie_Clicker_Clicker
             }
             catch(Exception){}
 
-            foreach(Building building in buildingList)
+            if (webDriver.FindElement(nextBuilding.path).GetAttribute("Class") == "product unlocked enabled")
             {
-                if (webDriver.FindElement(building._path).GetAttribute("Class") == "product unlocked enabled")
+                webDriver.FindElement(nextBuilding.path).Click();
+
+                var updatedPrice = webDriver.FindElement(nextBuilding.priceField).Text;
+                nextBuilding._price = int.Parse(updatedPrice.Replace(",", ""));
+                nextBuilding.CalculateValue();
+
+                for (int i = 0; i < buildingList.Length - 1; i++)
                 {
-                    webDriver.FindElement(building._path).Click();
-                    building.CalculateValue();
+                    if (buildingList[i].value > buildingList[i + 1].value)
+                        nextBuilding = buildingList[i];
+                    else nextBuilding = buildingList[i + 1];
                 }
             }
         }
@@ -144,7 +172,8 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public void TearDown()
         {
             Console.WriteLine("Minutes past: " + minutesPast);
-            webDriver.Close();
+            Console.Write("Second target: " + nextBuilding._name);
+            //webDriver.Close();
         }
     }
 }

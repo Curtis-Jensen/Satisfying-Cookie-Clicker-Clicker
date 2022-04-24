@@ -9,23 +9,29 @@ namespace Satisfying_Cookie_Clicker_Clicker
 {
     class Building
     {
-        string _name;
-        public By _path;
+        public string _name;
+        public By path;
+        public By priceField;
         public int _price;
         public float _multiplier;
         public float value;
 
-        public Building(string name, By path, int price, float multiplier)
+        public Building(string name, int buildingNumber, int price, float multiplier)
         {
             _name = name;
-            _path = path;
+            path =       By.XPath($"//*[@id='product{buildingNumber}']");
+            priceField = By.XPath($"//*[@id='productPrice{buildingNumber}']");
             _price = price;
             _multiplier = multiplier;
+            CalculateValue();
         }
 
         public void CalculateValue()
         {
             value = _multiplier / _price;
+            Console.WriteLine(_name + "'s value: " + value);
+            Console.WriteLine("Multiplier: " + _multiplier);
+            Console.WriteLine("Price: " + _price);
         }
     }
 }
