@@ -16,6 +16,8 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public float _multiplier;
         public float value;
 
+        private bool debug = false;
+
         public Building(string name, int buildingNumber, int price, float multiplier)
         {
             _name = name;
@@ -29,9 +31,12 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public void CalculateValue()
         {
             value = _multiplier / _price;
-            Console.WriteLine(_name + "'s value: " + value);
-            Console.WriteLine("Multiplier: " + _multiplier);
-            Console.WriteLine("Price: " + _price);
+            if (debug)
+            {
+                Console.WriteLine(_name + "'s value: " + value);
+                Console.WriteLine("Multiplier: " + _multiplier);
+                Console.WriteLine("Price: " + _price);
+            }
         }
     }
 }

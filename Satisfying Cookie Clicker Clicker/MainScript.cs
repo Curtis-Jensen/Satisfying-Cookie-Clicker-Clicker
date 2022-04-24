@@ -12,10 +12,10 @@ namespace Satisfying_Cookie_Clicker_Clicker
 {
     public class MainScript
     {
-        private ChromeDriver webDriver;
+        public ChromeDriver webDriver;
         private WebDriverWait wait;
-        private int minutesPast;
-        private By bigCookie = By.XPath("//*[@id='bigCookie']");
+        private readonly By bigCookie = By.XPath("//*[@id='bigCookie']");
+        private int i;
         private Building[] buildingList;
         private Building nextBuilding;
 
@@ -94,19 +94,18 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public void MainLoop()
         {
             StartWebDriver();
-            int i = 0;
 
             #region🏛Building List
             buildingList = new Building[]
             {
                 new Building("Cursor", buildingNumber: 0, price: 15, multiplier: .1f),
                 new Building("Grandma", buildingNumber: 1, price: 100, multiplier: 1),
-                new Building("Farm", buildingNumber: 2, price: 1100, multiplier: 8),
-                new Building("Mine", buildingNumber: 3, price: 12000, multiplier: 47),
-                new Building("Factory", buildingNumber: 4, price: 130000, multiplier: 260),
-                new Building("Bank", buildingNumber: 5, price: 1400000, multiplier: 1400),
-                new Building("Temple", buildingNumber: 6, price: 20000000, multiplier: 7800),
-                new Building("Wizard Tower", buildingNumber: 7, price: 330000000, multiplier: 44000),
+                //new Building("Farm", buildingNumber: 2, price: 1100, multiplier: 8),
+                //new Building("Mine", buildingNumber: 3, price: 12000, multiplier: 47),
+                //new Building("Factory", buildingNumber: 4, price: 130000, multiplier: 260),
+                //new Building("Bank", buildingNumber: 5, price: 1400000, multiplier: 1400),
+                //new Building("Temple", buildingNumber: 6, price: 20000000, multiplier: 7800),
+                //new Building("Wizard Tower", buildingNumber: 7, price: 330000000, multiplier: 44000),
                 //new Building("Farm", buildingNumber: 8, price: 1100, multiplier: 8),
                 //new Building("Farm", buildingNumber: 9, price: 1100, multiplier: 8),
                 //new Building("Farm", buildingNumber: 10, price: 1100, multiplier: 8),
@@ -128,7 +127,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 i++;
             }
 
-            while (true)
+            while (i < 1000)
             {
                 webDriver.FindElement(bigCookie).Click();
                 ClickOnUpgrades();
@@ -161,19 +160,36 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 for (int i = 0; i < buildingList.Length - 1; i++)
                 {
                     if (buildingList[i].value > buildingList[i + 1].value)
-                        nextBuilding = buildingList[i];
+                         nextBuilding = buildingList[i];
                     else nextBuilding = buildingList[i + 1];
                 }
             }
         }
         #endregion
 
+        private int TrackTotalCookies()
+        {
+            #region🚦Paths
+            var stats = By.XPath("//*[@id='statsButton']");
+            var totalCookiesField = By.XPath("//*[@id='menu']/div[3]/div[3]/div");
+            #endregion
+
+            webDriver.FindElement(stats).Click();
+            var totalCookiesText = webDriver.FindElement(totalCookiesField).Text;
+            Console.WriteLine(totalCookiesText);
+            var totalCookiesNum = int.Parse(totalCookiesText.Replace(",", ""));
+            webDriver.FindElement(stats).Click();
+
+            Console.WriteLine("Total cookies: " + totalCookiesNum);
+            return totalCookiesNum;
+        }
+
         [TearDown]
         public void TearDown()
         {
-            Console.WriteLine("Minutes past: " + minutesPast);
-            Console.Write("Second target: " + nextBuilding._name);
-            //webDriver.Close();
+            Console.WriteLine("Iterations ran: " + i);
+            TrackTotalCookies();
+            webDriver.Close();
         }
     }
 }
