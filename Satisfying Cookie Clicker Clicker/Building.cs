@@ -12,13 +12,13 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public string _name;
         public By path;
         public By priceField;
-        public int _price;
+        public long _price;
         public float _multiplier;
         public float value;
 
         private bool debug = false;
 
-        public Building(string name, int buildingNumber, int price, float multiplier)
+        public Building(string name, int buildingNumber, long price, float multiplier)
         {
             _name = name;
             path =       By.XPath($"//*[@id='product{buildingNumber}']");
