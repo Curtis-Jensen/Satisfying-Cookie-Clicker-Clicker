@@ -7,6 +7,7 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading;
 using System.Linq;
+using System.Timers;
 
 namespace Satisfying_Cookie_Clicker_Clicker
 {
@@ -20,6 +21,8 @@ namespace Satisfying_Cookie_Clicker_Clicker
         private Building nextBuilding;
         private int buildingLimit;
         private int buildingsBought;
+        private int cursorsBought;
+        private int upgradesPurchased;
 
         #region🖥StartUp Browser
         [SetUp]
@@ -39,7 +42,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             webDriver = new ChromeDriver(
                 @"C:\Users\me\source\repos\Satisfying Cookie Clicker Clicker\WebDrivers",
                 options);
-            wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(30));
+            wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(10));
 
             webDriver.Url = "https://orteil.dashnet.org/cookieclicker/";
         }
@@ -78,7 +81,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
 
             WaitThenClick(english);
 
-            Thread.Sleep(1000);
+            Thread.Sleep(1500);
             webDriver.FindElement(computerCookieConfirm).Click();
             Thread.Sleep(100);
 
@@ -143,6 +146,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             {
                 while (i%1000 != 0)
                 {
+                    ClickGoldenCookie();
                     WaitThenClick(bigCookie);
                     BuyCrates();
                     BuyBuildings();
@@ -168,6 +172,17 @@ namespace Satisfying_Cookie_Clicker_Clicker
         }
 
         /* Clicks on whatever crates it can, then clicks on whatever products it can
+         * 
+         * If the building (Or "product", as parts of the source code call it)
+         * is not enabled, don't even look further
+         * 
+         * If it is enabled, buy it
+         * 
+         * Then check how much it costs, and calculate it's value
+         * 
+         * Check to see if another building is more valuable after the price increase
+         * 
+         * Increase the tier of buildings that can be purchased if 10 more buildings have been purchased
          */
         private void BuyBuildings()
         {
@@ -175,15 +190,13 @@ namespace Satisfying_Cookie_Clicker_Clicker
 
             WaitThenClick(nextBuilding.path);
 
-            var updatedPrice = WaitThenClick(nextBuilding.priceField).Text;
+            var updatedPrice = webDriver.FindElement(nextBuilding.priceField).Text;
             nextBuilding._price = int.Parse(updatedPrice.Replace(",", ""));
             nextBuilding.CalculateValue();
 
             for (int i = 0; i < buildingLimit / 10; i++)
-            {
                 if (buildingList[i].value > nextBuilding.value)
                         nextBuilding = buildingList[i];
-            }
 
             buildingsBought++;
             if(buildingsBought == buildingLimit)
@@ -198,49 +211,146 @@ namespace Satisfying_Cookie_Clicker_Clicker
         #region Click Focussed
         /* This strategy focusses only on buying upgrades that improve how effective clicking the big cookie is
          * 
-         * Always clicking:
-         * First, it buys a cursor, then it looks to see if any upgrades have come up
-         * If there is a new upgrade, stop buying cursors, save up for the upgrade
-         * Once it has bought an upgrade, check if there is another upgrade, if not, repeat process
+         * Phase 1 & 2: 
+         * Buy only cursors and its upgrades until 2 upgrades and 10 cursors are purchased
+         * (This unlocks the third cursor upgrade.
+         * 
+         * Phase 3:
+         * Hire 3 grandmas
+         * Purchase the upgrade for them
+         * Hire 3 grandmas
+         * Purchase the upgrade for them
+         * Get to 12 total grandmas
+         * Purchase 3rd cursor upgrade
+         * 
+         * Phase 3:
+         * Shoot for the first clicking upgrade
          */
         [Test]
         public void ClickFocussed()
         {
-            StartWebDriver();
+            cursorsBought = 0;
+            for(int i=0; i < 15; i++)
+                WaitThenClick(bigCookie);
 
             By cursor = By.XPath($"//*[@id='product0']");
-            int cursorsBought = 0;
-            By crate;
+            WaitThenClick(cursor);
 
-            while (true)
+            //Assert.Pass("Finished phase 1");
+
+            while (upgradesPurchased < 2)
             {
                 WaitThenClick(bigCookie);
-                if (GetClass(cursor) != "product unlocked enabled") continue;
-                WaitThenClick(cursor);
-                cursorsBought++;
-                if (cursorsBought % 50 != 0) continue;
-
-                try
-                {
-                    crate = By.XPath($"//*[@id='upgrade0']");
-
-                    if (GetClass(crate) == "crate upgrade" || GetClass(crate) == "crate upgrade enabled")
-                        while (true)
-                        {
-                            WaitThenClick(bigCookie);
-                            if (GetClass(crate) == "crate upgrade enabled")
-                            {
-                                WaitThenClick(crate);
-                                break;
-                            }
-                        }
-                }
-                catch(Exception){ Console.WriteLine("It looked for a crate when there was none... Probably..."); }
+                BuyVisibleUpgrades();
             }
+
+            //Assert.Pass("Finished phase 2");
+            
+            while (cursorsBought < 25)
+            {
+                ClickGoldenCookie();
+                WaitThenClick(bigCookie);
+
+                BuyCursors();
+            }
+
+            BuyVisibleUpgrades();
+            
+            while (true)
+            {
+                ClickGoldenCookie();
+                WaitThenClick(bigCookie);
+
+                BuyCrates();
+                BuyBuildings();
+            }
+        }
+
+        private void BuyVisibleUpgrades()
+        {
+            try
+            {
+                By upgrade = By.XPath($"//*[@id='upgrade0']");
+
+                if (GetClass(upgrade) == "crate upgrade")//If any upgrade has revealed itself, start focussing on only what is in the while loop
+                    while (true)
+                    {
+                        ClickGoldenCookie();
+                        WaitThenClick(bigCookie);
+                        if (GetClass(upgrade) == "crate upgrade enabled")
+                        {
+                            WaitThenClick(upgrade);
+                            upgradesPurchased++;
+                            Thread.Sleep(500);
+                            break;
+                        }
+                    }
+            }
+            catch (Exception) { }
+        }
+
+        void BuyCursors()
+        {
+            By cursor = By.XPath($"//*[@id='product0']");
+
+            if (GetClass(cursor) != "product unlocked enabled") return;
+            WaitThenClick(cursor);
+            cursorsBought++;
+            Console.WriteLine("Amount of cursors bought is: " + cursorsBought);
         }
 
         string GetClass(By path) => webDriver.FindElement(path).GetAttribute("Class");
         #endregion
+
+        #region Other Tests
+        static System.Timers.Timer clickTimer = new(1000);
+        int secondsCount;
+
+        /* Simply clicks the cookie without buying any upgrades to see how many times selenium can click the cookie
+         * 
+         * Starts the timer when entering this test
+         * 
+         * Clicks the cookie
+         * 
+         * Checks to see if a minute has passed
+         * 
+         * When the timer is done it divides the amount of cookies by the amount of time
+         */
+        [Test]
+        public void ClickPerSecondTest()
+        {
+            clickTimer.Elapsed += ClickTimer_Elapsed;
+            clickTimer.Enabled = true;
+            clickTimer.AutoReset = true;
+            clickTimer.Start();
+
+            while (secondsCount < 60)
+            {
+                WaitThenClick(bigCookie);
+            }
+        }
+
+        [Test]
+        public void BlankSlate(){}
+
+        private void ClickTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            secondsCount++;
+        }
+        #endregion
+
+        #region Helper Methods
+        private void ClickGoldenCookie()
+        {
+            By goldenCookie = By.XPath("//*[@id='shimmers']/div");
+
+            try 
+            { 
+                webDriver.FindElement(goldenCookie).Click();
+                Assert.Pass("🎵I've got a golden coookiiee!!🎵");
+            }
+            catch(Exception){}
+        }
 
         IWebElement WaitThenClick(By element, string input = "Click")
         {
@@ -268,6 +378,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             Console.WriteLine("Total cookies: " + totalCookiesNum);
             return totalCookiesNum;
         }
+        #endregion
 
         [TearDown]
         public void TearDown()
