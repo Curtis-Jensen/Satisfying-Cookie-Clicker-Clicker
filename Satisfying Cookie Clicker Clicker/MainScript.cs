@@ -230,43 +230,52 @@ namespace Satisfying_Cookie_Clicker_Clicker
         public void ClickFocussed()
         {
             cursorsBought = 0;
-            for(int i=0; i < 15; i++)
+            var grandmasHired = 0;
+            By cursor =  By.XPath($"//*[@id='product0']");
+            By grandma = By.XPath($"//*[@id='product1']");
+            By cookiesBank = By.XPath("//*[@id='cookies']/span");
+            //var cookiesBankText = WaitThenClick(cookiesBank).Text;
+            //var cookiesBankNum = int.Parse(cookiesBankText.Replace(",", ""));
+            //Console.WriteLine("Cookies Bank has: " + cookiesBankNum);
+
+            for (int i=0; i < 15; i++)
                 WaitThenClick(bigCookie);
 
-            By cursor = By.XPath($"//*[@id='product0']");
             WaitThenClick(cursor);
 
-            //Assert.Pass("Finished phase 1");
+            //Assert.Pass("Finished cursory phase");
 
             while (upgradesPurchased < 2)
             {
                 WaitThenClick(bigCookie);
-                BuyVisibleUpgrades();
+                BuyVisibleUpgrade();
             }
 
-            //Assert.Pass("Finished phase 2");
-            
-            while (cursorsBought < 25)
+            //Assert.Pass("Finished quad click phase");
+
+            while (grandmasHired < 14)
             {
-                ClickGoldenCookie();
                 WaitThenClick(bigCookie);
 
-                BuyCursors();
+                if (GetClass(grandma) == "product unlocked enabled")
+                {
+                    Thread.Sleep(500);
+                    WaitThenClick(grandma);
+                    Thread.Sleep(500);
+                    grandmasHired++;
+                    Console.WriteLine("Grandmas Hired");
+                }
             }
 
-            BuyVisibleUpgrades();
-            
-            while (true)
-            {
-                ClickGoldenCookie();
-                WaitThenClick(bigCookie);
+            //Assert.Pass("Finished meet grandma phase");
 
-                BuyCrates();
-                BuyBuildings();
-            }
+            BuyVisibleUpgrade();
+            BuyVisibleUpgrade();
+            BuyVisibleUpgrade();
+            BuyVisibleUpgrade();
         }
 
-        private void BuyVisibleUpgrades()
+        private void BuyVisibleUpgrade()
         {
             try
             {
@@ -281,7 +290,6 @@ namespace Satisfying_Cookie_Clicker_Clicker
                         {
                             WaitThenClick(upgrade);
                             upgradesPurchased++;
-                            Thread.Sleep(500);
                             break;
                         }
                     }
@@ -340,18 +348,6 @@ namespace Satisfying_Cookie_Clicker_Clicker
         #endregion
 
         #region Helper Methods
-        private void ClickGoldenCookie()
-        {
-            By goldenCookie = By.XPath("//*[@id='shimmers']/div");
-
-            try 
-            { 
-                webDriver.FindElement(goldenCookie).Click();
-                Assert.Pass("🎵I've got a golden coookiiee!!🎵");
-            }
-            catch(Exception){}
-        }
-
         IWebElement WaitThenClick(By element, string input = "Click")
         {
             wait.Until(w => w.FindElement(element));
@@ -360,6 +356,18 @@ namespace Satisfying_Cookie_Clicker_Clicker
             if (input == "Click") webElement.Click();
             else                  webElement.SendKeys(input);
             return webElement;
+        }
+
+    void ClickGoldenCookie()
+        {
+            By goldenCookie = By.XPath("//*[@id='shimmers']/div");
+
+            try
+            {
+                webDriver.FindElement(goldenCookie).Click();
+                Assert.Pass("🎵I've got a golden coookiiee!!🎵");
+            }
+            catch (Exception) { }
         }
 
         private int TrackTotalCookies()
@@ -371,7 +379,6 @@ namespace Satisfying_Cookie_Clicker_Clicker
 
             WaitThenClick(stats);
             var totalCookiesText = WaitThenClick(totalCookiesField).Text;
-            Console.WriteLine(totalCookiesText);
             var totalCookiesNum = int.Parse(totalCookiesText.Replace(",", ""));
             WaitThenClick(stats);
 
@@ -383,7 +390,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         [TearDown]
         public void TearDown()
         {
-            Console.WriteLine("Iterations ran: " + i);
+            //Console.WriteLine("Iterations ran: " + i); //For the "MainLoop()"
             //Console.WriteLine("Next building is: " + nextBuilding._name);
             TrackTotalCookies();
             //webDriver.Close();
