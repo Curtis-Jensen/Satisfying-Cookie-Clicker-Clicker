@@ -213,15 +213,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
          * 
          * Phase 1 & 2: 
          * Buy only cursors and its upgrades until 2 upgrades and 10 cursors are purchased
-         * (This unlocks the third cursor upgrade.
-         * 
-         * Phase 3:
-         * Hire 3 grandmas
-         * Purchase the upgrade for them
-         * Hire 3 grandmas
-         * Purchase the upgrade for them
-         * Get to 12 total grandmas
-         * Purchase 3rd cursor upgrade
+         * (This unlocks the third cursor upgrade)
          * 
          * Phase 3:
          * Shoot for the first clicking upgrade
@@ -229,41 +221,19 @@ namespace Satisfying_Cookie_Clicker_Clicker
         [Test]
         public void ClickFocussed()
         {
-            cursorsBought = 0;
-            var grandmasHired = 0;
             By cursor =  By.XPath($"//*[@id='product0']");
-            By grandma = By.XPath($"//*[@id='product1']");
             By upgrade = By.XPath($"//*[@id='upgrade0']");
 
             for (int i=0; i < 15; i++)
                 WaitThenClick(bigCookie);
 
             WaitThenClick(cursor);
-            var cursorsPurchased = 1;
-
-            //Assert.Pass("Finished cursory phase");
+            var cursorsBought = 1;
 
             while (upgradesBought < 2)
             {
                 WaitThenClick(bigCookie);
                 if(Buy(upgrade)) upgradesBought++;
-            }
-
-            //Assert.Pass("Finished quad click phase");
-
-            while (grandmasHired < 5)
-            {
-                WaitThenClick(bigCookie);
-
-                if(Buy(grandma)) grandmasHired++;
-            }
-
-            //Assert.Pass("Finished meet grandma phase");
-
-            while (upgradesBought < 3)
-            {
-                WaitThenClick(bigCookie);
-                if (Buy(upgrade)) upgradesBought++;
             }
             
             while (cursorsBought < 10)
@@ -272,7 +242,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 if (Buy(cursor)) cursorsBought++;
             }
 
-            while (upgradesBought < 5)
+            while (upgradesBought < 3)
             {
                 WaitThenClick(bigCookie);
                 if (Buy(upgrade)) upgradesBought++;
