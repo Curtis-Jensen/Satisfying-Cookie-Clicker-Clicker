@@ -22,7 +22,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         private int buildingLimit;
         private int buildingsBought;
         private int cursorsBought;
-        private int upgradesPurchased;
+        private int upgradesBought;
 
         #region🖥StartUp Browser
         [SetUp]
@@ -233,46 +233,55 @@ namespace Satisfying_Cookie_Clicker_Clicker
             var grandmasHired = 0;
             By cursor =  By.XPath($"//*[@id='product0']");
             By grandma = By.XPath($"//*[@id='product1']");
-            By cookiesBank = By.XPath("//*[@id='cookies']/span");
-            //var cookiesBankText = WaitThenClick(cookiesBank).Text;
-            //var cookiesBankNum = int.Parse(cookiesBankText.Replace(",", ""));
-            //Console.WriteLine("Cookies Bank has: " + cookiesBankNum);
+            By upgrade = By.XPath($"//*[@id='upgrade0']");
 
             for (int i=0; i < 15; i++)
                 WaitThenClick(bigCookie);
 
             WaitThenClick(cursor);
+            var cursorsPurchased = 1;
 
             //Assert.Pass("Finished cursory phase");
 
-            while (upgradesPurchased < 2)
+            while (upgradesBought < 2)
             {
                 WaitThenClick(bigCookie);
-                BuyVisibleUpgrade();
+                if(Buy(upgrade)) upgradesBought++;
             }
 
             //Assert.Pass("Finished quad click phase");
 
-            while (grandmasHired < 14)
+            while (grandmasHired < 5)
             {
                 WaitThenClick(bigCookie);
 
-                if (GetClass(grandma) == "product unlocked enabled")
-                {
-                    Thread.Sleep(500);
-                    WaitThenClick(grandma);
-                    Thread.Sleep(500);
-                    grandmasHired++;
-                    Console.WriteLine("Grandmas Hired");
-                }
+                if(Buy(grandma)) grandmasHired++;
             }
 
             //Assert.Pass("Finished meet grandma phase");
 
-            BuyVisibleUpgrade();
-            BuyVisibleUpgrade();
-            BuyVisibleUpgrade();
-            BuyVisibleUpgrade();
+            while (upgradesBought < 3)
+            {
+                WaitThenClick(bigCookie);
+                if (Buy(upgrade)) upgradesBought++;
+            }
+            
+            while (cursorsBought < 10)
+            {
+                WaitThenClick(bigCookie);
+                if (Buy(cursor)) cursorsBought++;
+            }
+
+            while (upgradesBought < 5)
+            {
+                WaitThenClick(bigCookie);
+                if (Buy(upgrade)) upgradesBought++;
+            }
+
+            while (true)
+            {
+                WaitThenClick(bigCookie);
+            }
         }
 
         private void BuyVisibleUpgrade()
@@ -289,7 +298,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
                         if (GetClass(upgrade) == "crate upgrade enabled")
                         {
                             WaitThenClick(upgrade);
-                            upgradesPurchased++;
+                            upgradesBought++;
                             break;
                         }
                     }
@@ -358,7 +367,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             return webElement;
         }
 
-    void ClickGoldenCookie()
+        void ClickGoldenCookie()
         {
             By goldenCookie = By.XPath("//*[@id='shimmers']/div");
 
@@ -368,6 +377,33 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 Assert.Pass("🎵I've got a golden coookiiee!!🎵");
             }
             catch (Exception) { }
+        }
+
+        /* Buys buildings and upgrades.
+         * 
+         * Checks to see if the upgrade is ready to be bought by inspecting it's class
+         * 
+         * Hovers over the upgrade for a moment both to hilight what is being purchased
+         * and to wait until it is fully ready to be purchased TODO: Actually hover.
+         * 
+         * Buys the upgrade
+         * 
+         * Hovers some more
+         * 
+         * Waits for the apearance of buyability to go away
+         * 
+         * Increments the number of buildings / upgrades purchased?
+         */
+        bool Buy(By element)
+        {
+            var style = GetClass(element);
+            if (style != "product unlocked enabled" && style != "crate upgrade enabled") return false;
+
+            Thread.Sleep(500);
+            WaitThenClick(element);
+            Thread.Sleep(100);
+
+            return true;
         }
 
         private int TrackTotalCookies()
