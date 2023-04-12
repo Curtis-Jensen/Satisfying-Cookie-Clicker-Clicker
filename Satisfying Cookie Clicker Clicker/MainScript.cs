@@ -14,15 +14,10 @@ namespace Satisfying_Cookie_Clicker_Clicker
     public class MainScript
     {
         public ChromeDriver webDriver;
-        private WebDriverWait wait;
-        private readonly By bigCookie = By.XPath("//*[@id='bigCookie']");
-        private int i;
-        private Building[] buildingList;
-        private Building nextBuilding;
-        private int buildingLimit;
-        private int buildingsBought;
-        private int cursorsBought;
-        private int upgradesBought;
+        WebDriverWait wait;
+        By goldenCookie = By.XPath("//*[@id='shimmers']/div");
+        readonly By bigCookie = By.XPath("//*[@id='bigCookie']");
+        int upgradesBought;
 
         #region🖥StartUp Browser
         [SetUp]
@@ -40,7 +35,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             options.AddArgument(@"load-extension=C:\Users\me\Desktop\AdBlocker");
 
             webDriver = new ChromeDriver(
-                @"C:\Users\me\source\repos\Satisfying Cookie Clicker Clicker\WebDrivers",
+                @"C:\Users\me\Desktop\Web Drivers",
                 options);
             wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(10));
 
@@ -61,7 +56,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             webDriver.Url = "https://orteil.dashnet.org/cookieclicker/";
         }
 
-        private void SetPreferences()
+        void SetPreferences()
         {
             #region🚦Paths
             By english =         By.XPath("//*[@id='langSelect-EN']");
@@ -90,7 +85,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             WaitThenClick(numbers);
             WaitThenClick(altFont);
             WaitThenClick(shortNumbers);
-            WaitThenClick(fastNotes);
+            //WaitThenClick(fastNotes);
             WaitThenClick(extraButtons);
             WaitThenClick(options);
 
@@ -101,114 +96,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         }
         #endregion
 
-        #region🍪Main Code
-        /* product0 is cursor
-         * product1 is grandma, etc
-         */
-        [Test]
-        public void MainLoop()
-        {
-            #region🏛Building List
-            buildingList = new Building[]
-            {
-                new Building("Cursor", buildingNumber: 0, price: 15, multiplier: .1f),
-                new Building("Grandma", buildingNumber: 1, price: 100, multiplier: 1),
-                new Building("", buildingNumber: 2, price: 1100, multiplier: 8),
-                new Building("Mine", buildingNumber: 3, price: 12000, multiplier: 47),
-                new Building("Factory", buildingNumber: 4, price: 130000, multiplier: 260),
-                new Building("Bank", buildingNumber: 5, price: 1400000, multiplier: 1400),
-                new Building("Temple", buildingNumber: 6, price: 20000000, multiplier: 7800),
-                new Building("Wizard Tower", buildingNumber: 7, price: 330000000, multiplier: 44000),
-                new Building("Shipment", buildingNumber: 8, price: 5100000000, multiplier: 8),
-                new Building("", buildingNumber: 9, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 10, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 11, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 12, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 13, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 14, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 15, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 16, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 17, price: 1100, multiplier: 8),
-                new Building("", buildingNumber: 18, price: 1100, multiplier: 8),
-            };
-            nextBuilding = buildingList[1];
-            #endregion
-
-            buildingLimit = 20;
-
-            while (i < 99)
-            {
-                WaitThenClick(bigCookie);
-                i++;
-            }
-
-            while (true)
-            {
-                while (i%1000 != 0)
-                {
-                    ClickGoldenCookie();
-                    WaitThenClick(bigCookie);
-                    BuyCrates();
-                    BuyBuildings();
-                    i++;
-                }
-                WaitThenClick(bigCookie);
-                if (TrackTotalCookies() > 1000000) return;
-                i++;
-            }
-        }
-
-        private void BuyCrates()
-        {
-            //Try catch here so that, before the first upgrade is available, it doesn't cause an error.
-            //Checking to see that the current cookies is more than 15 could work too
-            try
-            {
-                By crateUpgrade = By.XPath($"//*[@id='upgrade0']");
-                if (webDriver.FindElement(crateUpgrade).GetAttribute("Class") == "crate upgrade enabled")
-                    WaitThenClick(crateUpgrade);
-            }
-            catch (Exception) { }
-        }
-
-        /* Clicks on whatever crates it can, then clicks on whatever products it can
-         * 
-         * If the building (Or "product", as parts of the source code call it)
-         * is not enabled, don't even look further
-         * 
-         * If it is enabled, buy it
-         * 
-         * Then check how much it costs, and calculate it's value
-         * 
-         * Check to see if another building is more valuable after the price increase
-         * 
-         * Increase the tier of buildings that can be purchased if 10 more buildings have been purchased
-         */
-        private void BuyBuildings()
-        {
-            if (webDriver.FindElement(nextBuilding.path).GetAttribute("Class") != "product unlocked enabled") return;
-
-            WaitThenClick(nextBuilding.path);
-
-            var updatedPrice = webDriver.FindElement(nextBuilding.priceField).Text;
-            nextBuilding._price = int.Parse(updatedPrice.Replace(",", ""));
-            nextBuilding.CalculateValue();
-
-            for (int i = 0; i < buildingLimit / 10; i++)
-                if (buildingList[i].value > nextBuilding.value)
-                        nextBuilding = buildingList[i];
-
-            buildingsBought++;
-            if(buildingsBought == buildingLimit)
-            {
-                buildingLimit += 10;
-                buildingsBought = 0;
-                if (buildingLimit > 180) buildingLimit = 180;
-            }
-        }
-        #endregion
-
-        #region Click Focussed
+        #region🍪Click Focussed
         /* This strategy focusses only on buying upgrades that improve how effective clicking the big cookie is
          * 
          * Phase 1 & 2: 
@@ -221,69 +109,43 @@ namespace Satisfying_Cookie_Clicker_Clicker
         [Test]
         public void ClickFocussed()
         {
+            var cursorsBought = 1;
             By cursor =  By.XPath($"//*[@id='product0']");
             By upgrade = By.XPath($"//*[@id='upgrade0']");
 
             for (int i=0; i < 15; i++)
-                WaitThenClick(bigCookie);
+                ClickCookies();
 
             WaitThenClick(cursor);
-            var cursorsBought = 1;
 
             while (upgradesBought < 2)
             {
-                WaitThenClick(bigCookie);
-                if(Buy(upgrade)) upgradesBought++;
+                ClickCookies();
+                if (Buy(upgrade)) upgradesBought++;
             }
             
             while (cursorsBought < 10)
             {
-                WaitThenClick(bigCookie);
+                ClickCookies();
                 if (Buy(cursor)) cursorsBought++;
             }
 
             while (upgradesBought < 3)
             {
-                WaitThenClick(bigCookie);
+                ClickCookies();
                 if (Buy(upgrade)) upgradesBought++;
+            }
+
+            while (cursorsBought < 25)
+            {
+                ClickCookies();
+                if (Buy(cursor)) cursorsBought++;
             }
 
             while (true)
             {
-                WaitThenClick(bigCookie);
+                ClickCookies();
             }
-        }
-
-        private void BuyVisibleUpgrade()
-        {
-            try
-            {
-                By upgrade = By.XPath($"//*[@id='upgrade0']");
-
-                if (GetClass(upgrade) == "crate upgrade")//If any upgrade has revealed itself, start focussing on only what is in the while loop
-                    while (true)
-                    {
-                        ClickGoldenCookie();
-                        WaitThenClick(bigCookie);
-                        if (GetClass(upgrade) == "crate upgrade enabled")
-                        {
-                            WaitThenClick(upgrade);
-                            upgradesBought++;
-                            break;
-                        }
-                    }
-            }
-            catch (Exception) { }
-        }
-
-        void BuyCursors()
-        {
-            By cursor = By.XPath($"//*[@id='product0']");
-
-            if (GetClass(cursor) != "product unlocked enabled") return;
-            WaitThenClick(cursor);
-            cursorsBought++;
-            Console.WriteLine("Amount of cursors bought is: " + cursorsBought);
         }
 
         string GetClass(By path) => webDriver.FindElement(path).GetAttribute("Class");
@@ -337,16 +199,18 @@ namespace Satisfying_Cookie_Clicker_Clicker
             return webElement;
         }
 
-        void ClickGoldenCookie()
+        void ClickCookies()
         {
-            By goldenCookie = By.XPath("//*[@id='shimmers']/div");
-
             try
             {
                 webDriver.FindElement(goldenCookie).Click();
                 Assert.Pass("🎵I've got a golden coookiiee!!🎵");
             }
             catch (Exception) { }
+
+            webDriver.FindElement(bigCookie).Click();
+
+            Thread.Sleep(4);
         }
 
         /* Buys buildings and upgrades.
@@ -369,6 +233,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             var style = GetClass(element);
             if (style != "product unlocked enabled" && style != "crate upgrade enabled") return false;
 
+            Console.Write(style);
             Thread.Sleep(500);
             WaitThenClick(element);
             Thread.Sleep(100);
@@ -396,8 +261,6 @@ namespace Satisfying_Cookie_Clicker_Clicker
         [TearDown]
         public void TearDown()
         {
-            //Console.WriteLine("Iterations ran: " + i); //For the "MainLoop()"
-            //Console.WriteLine("Next building is: " + nextBuilding._name);
             TrackTotalCookies();
             //webDriver.Close();
         }
