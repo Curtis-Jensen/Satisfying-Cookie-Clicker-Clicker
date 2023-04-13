@@ -136,17 +136,26 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 if (Buy(upgrade)) upgradesBought++;
             }
 
-            while (cursorsBought < 25)
+            Thread buildingThread = new(() =>
             {
-                ClickCookies();
-                if (Buy(cursor)) cursorsBought++;
-            }
+                while (true)
+                {
+                    if (Buy(upgrade))
+                        upgradesBought++;
+                    else if (Buy(cursor))
+                        cursorsBought++;
+
+                    // Wait for specified interval before checking again
+                    Thread.Sleep(5000);
+                }
+            });
+
+            // Start the building thread
+            buildingThread.Start();
 
             while (true)
             {
                 ClickCookies();
-                if (Buy(upgrade))    upgradesBought++;
-                else if (Buy(cursor)) cursorsBought++;
             }
         }
         #endregion
