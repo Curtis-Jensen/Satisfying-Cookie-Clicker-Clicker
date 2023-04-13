@@ -85,7 +85,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
             WaitThenClick(numbers);
             WaitThenClick(altFont);
             WaitThenClick(shortNumbers);
-            //WaitThenClick(fastNotes);
+            WaitThenClick(fastNotes);
             WaitThenClick(extraButtons);
             WaitThenClick(options);
 
@@ -145,6 +145,8 @@ namespace Satisfying_Cookie_Clicker_Clicker
             while (true)
             {
                 ClickCookies();
+                if (Buy(upgrade))    upgradesBought++;
+                else if (Buy(cursor)) cursorsBought++;
             }
         }
 
@@ -195,7 +197,8 @@ namespace Satisfying_Cookie_Clicker_Clicker
 
             var webElement = webDriver.FindElement(element);
             if (input == "Click") webElement.Click();
-            else                  webElement.SendKeys(input);
+            else if (input == "") { }
+            else webElement.SendKeys(input);
             return webElement;
         }
 
@@ -230,11 +233,12 @@ namespace Satisfying_Cookie_Clicker_Clicker
          */
         bool Buy(By element)
         {
+            WaitThenClick(element, "");
             var style = GetClass(element);
             if (style != "product unlocked enabled" && style != "crate upgrade enabled") return false;
 
             Console.Write(style);
-            Thread.Sleep(500);
+            Thread.Sleep(600);
             WaitThenClick(element);
             Thread.Sleep(100);
 
