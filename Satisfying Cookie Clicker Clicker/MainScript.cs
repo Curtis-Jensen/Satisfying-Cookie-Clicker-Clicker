@@ -149,8 +149,6 @@ namespace Satisfying_Cookie_Clicker_Clicker
                 else if (Buy(cursor)) cursorsBought++;
             }
         }
-
-        string GetClass(By path) => webDriver.FindElement(path).GetAttribute("Class");
         #endregion
 
         #region Other Tests
@@ -234,7 +232,7 @@ namespace Satisfying_Cookie_Clicker_Clicker
         bool Buy(By element)
         {
             WaitThenClick(element, "");
-            var style = GetClass(element);
+            var style = webDriver.FindElement(element).GetAttribute("Class");
             if (style != "product unlocked enabled" && style != "crate upgrade enabled") return false;
 
             Console.Write(style);
